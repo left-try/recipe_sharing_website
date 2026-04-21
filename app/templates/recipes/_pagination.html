@@ -1,0 +1,17 @@
+{% if recipes.pages > 1 %}
+  <div class="pagination">
+    {% if recipes.has_prev %}
+      <a class="page" href="{{ pagination_url(recipes.prev_num) }}">← Prev</a>
+    {% else %}
+      <span class="page disabled">← Prev</span>
+    {% endif %}
+
+    <span class="muted small">Page {{ recipes.page }} of {{ recipes.pages }}</span>
+
+    {% if recipes.has_next %}
+      <a class="page" href="{{ pagination_url(recipes.next_num) }}">Next →</a>
+    {% else %}
+      <span class="page disabled">Next →</span>
+    {% endif %}
+  </div>
+{% endif %}

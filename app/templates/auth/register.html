@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Sign up • RecipeShare{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+<div class="auth card">
+  <h2>Create account</h2>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.username.label }}
+      {{ form.username(class_="input", placeholder="username") }}
+      {% for e in form.username.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.email.label }}
+      {{ form.email(class_="input", placeholder="you@example.com") }}
+      {% for e in form.email.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.password.label }}
+      {{ form.password(class_="input", placeholder="min 6 chars") }}
+      {% for e in form.password.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.confirm.label }}
+      {{ form.confirm(class_="input", placeholder="repeat password") }}
+      {% for e in form.confirm.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <button class="btn" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+  <div class="auth-links">
+    <a href="{{ url_for('auth.login') }}">Already have an account?</a>
+  </div>
+</div>
+{% endblock %}

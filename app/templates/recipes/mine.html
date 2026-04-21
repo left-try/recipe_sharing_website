@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My Recipes • RecipeShare{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>My recipes</h2>
+  <p class="muted">Drafts are hidden from other users until published.</p>
+</div>
+
+<section class="grid">
+  {% for r in recipes.items %}
+    <article class="recipe-card card">
+      <a class="recipe-card-img" href="{{ url_for('recipes.detail', recipe_id=r.id) }}">
+        {% if r.image_display_url %}
+          <img src="{{ r.image_display_url }}" alt="recipe image" />
+        {% else %}
+          <div class="img-placeholder">No image</div>
+        {% endif %}
+      </a>
+
+      <div class="recipe-card-body">
+        <div class="recipe-card-top">
+          <h3 class="recipe-title">
+            <a href="{{ url_for('recipes.detail', recipe_id=r.id) }}">{{ r.title }}</a>
+          </h3>
+          {% if r.is_published %}
+            <span class="badge ok">Published</span>
+          {% else %}
+            <span class="badge warn">Draft</span>
+          {% endif %}
+        </div>
+
+        <p class="muted clamp-2">{{ r.description or "—" }}</p>
+
+        <div class="row gap">
+          <a class="btn secondary" href="{{ url_for('recipes.edit', recipe_id=r.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('recipes.delete', recipe_id=r.id) }}" onsubmit="return confirm('Delete this recipe?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
+    </article>
+  {% else %}
+    <div class="card empty">No recipes yet. <a href="{{ url_for('recipes.create') }}">Create one</a>.</div>
+  {% endfor %}
+</section>
+
+{% include "recipes/_pagination.html" with context %}
+{% endblock %}

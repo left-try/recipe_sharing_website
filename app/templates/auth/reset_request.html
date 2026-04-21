@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Reset password • RecipeShare{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+<div class="auth card">
+  <h2>Reset password</h2>
+  <p class="muted">We will print a reset link in the server console.</p>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.email.label }}
+      {{ form.email(class_="input", placeholder="you@example.com") }}
+      {% for e in form.email.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <button class="btn" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+</div>
+{% endblock %}

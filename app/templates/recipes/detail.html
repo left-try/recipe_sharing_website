@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.title }} • RecipeShare{% endblock %}
+
+{% block content %}
+<div class="recipe-detail card" data-recipe-id="{{ recipe.id }}" data-base-servings="{{ recipe.servings }}">
+  <div class="recipe-detail-head">
+    <div>
+      <h2>{{ recipe.title }}</h2>
+      <div class="muted">
+        by <b>{{ recipe.author.username }}</b>
+        {% if recipe.category %}
+          <span class="dot">•</span>
+          <a class="chip" href="{{ url_for('main.index', category=recipe.category.slug) }}">{{ recipe.category.name }}</a>
+        {% endif %}
+        <span class="dot">•</span>
+        <span>{{ recipe.view_count }} views</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn secondary" id="recipeExportPdf" href="{{ url_for('recipes.export_pdf', recipe_id=recipe.id) }}">Download PDF</a>
+
+      {% if current_user.is_authenticated %}
+        <button class="btn secondary js-like" data-liked="{{ '1' if liked else '0' }}">
+          <span class="js-like-text">{% if liked %}Liked{% else %}Like{% endif %}</span>
+          <span class="badge js-like-count">{{ recipe.likes.count() }}</span>
+        </button>
+        <button class="btn secondary js-fav" data-favorited="{{ '1' if favorited else '0' }}">
+          <span class="js-fav-text">{% if favorited %}Favourited{% else %}Favourite{% endif %}</span>
+        </button>
+      {% else %}
+        <a class="btn secondary" href="{{ url_for('auth.login', next=url_for('recipes.detail', recipe_id=recipe.id)) }}">Log in to like/favourite</a>
+      {% endif %}
+
+      {% if current_user.is_authenticated and (current_user.id == recipe.user_id or current_user.is_admin) %}
+        <a class="btn" href="{{ url_for('recipes.edit', recipe_id=recipe.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('recipes.delete', recipe_id=recipe.id) }}" onsubmit="return confirm('Delete this recipe?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn danger" type="submit">Delete</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if recipe.image_display_url %}
+    <img class="hero-img" src="{{ recipe.image_display_url }}" alt="Recipe image" />
+  {% endif %}
+
+  {% if recipe.description %}
+    <p class="desc">{{ recipe.description }}</p>
+  {% endif %}
+
+  <div class="stats">
+    <div class="stat"><div class="muted small">Prep</div><div>{{ recipe.prep_minutes }} min</div></div>
+    <div class="stat"><div class="muted small">Cook</div><div>{{ recipe.cook_minutes }} min</div></div>
+    <div class="stat"><div class="muted small">Servings</div><div>{{ recipe.servings }}</div></div>
+    <div class="stat"><div class="muted small">Difficulty</div><div>{{ recipe.difficulty }}</div></div>
+  </div>
+
+  {% if recipe.tags %}
+    <div class="tags">
+      {% for t in recipe.tags %}
+        <a class="chip" href="{{ url_for('main.index', tag=t.slug) }}">{{ t.name }}</a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if recipe.has_computable_ingredients() %}
+  <section class="ingredient-calculator" aria-label="Adjust servings and units">
+    <div class="ingredient-calculator-row">
+      <label class="calc-field">
+        <span class="muted small">Servings</span>
+        <input type="number" class="input calc-input" id="calcServings" min="0.25" max="500" step="0.25" value="{{ recipe.servings }}" />
+      </label>
+      <label class="calc-field">
+        <span class="muted small">Units</span>
+        <select class="input calc-input" id="calcMode" aria-label="Unit system">
+          <option value="original">Original</option>
+          <option value="metric">Metric</option>
+          <option value="us">US (cups / oz)</option>
+        </select>
+      </label>
+      <span class="calc-status muted small" id="calcStatus" aria-live="polite"></span>
+    </div>
+    <p class="muted small calc-hint">Adjust yield or switch units. Volume→weight uses typical densities (approximate).</p>
+  </section>
+  {% endif %}
+
+  <section class="recipe-detail-section ingredients-section">
+    <h3>Ingredients</h3>
+    <ul class="list ingredients-list" id="legacyIngredientsList">
+      {% for i in recipe.ingredients_list() %}
+        <li>{{ i }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="recipe-detail-section steps-section">
+    <h3>Steps</h3>
+    <ol class="list recipe-steps">
+      {% for step in recipe.structured_steps() %}
+        <li class="recipe-step">
+          {% if step.type == 'content' %}
+            <div class="recipe-step-head">
+              <div class="step-kicker">Step {{ loop.index }}</div>
+              <div class="step-title">{{ step.title }}</div>
+            </div>
+            <div class="markdown-body recipe-step-body">{{ step.description_markdown|markdown }}</div>
+            {% if step.ingredients %}
+              <div class="step-ingredients">
+                <div class="muted small">Ingredients for this step</div>
+                <ul class="list js-step-ingredients" data-step-index="{{ loop.index0 }}">
+                  {% for ingredient in step.ingredients %}
+                    <li>
+                      {% if ingredient.amount %}
+                        {{ ingredient.amount }}{% if ingredient.unit %} {{ ingredient.unit }}{% endif %}
+                      {% endif %}
+                      {{ ingredient.name }}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% elif step.type == 'video' %}
+            <div class="recipe-step-head">
+              <div class="step-kicker">Step {{ loop.index }}</div>
+            </div>
+            <video class="step-video" controls playsinline preload="metadata" src="{{ step.video_url }}">
+              Your browser does not support embedded video.
+            </video>
+          {% else %}
+            <div class="recipe-step-head">
+              <div class="step-kicker">Step {{ loop.index }}</div>
+            </div>
+            <img class="step-image" src="{{ step.image_url }}" alt="Recipe step image" />
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <hr class="sep" />
+
+  <section class="comments">
+    <div class="comments-head">
+      <h3>Comments</h3>
+      <span class="muted small">Live via AJAX</span>
+    </div>
+
+    {% if current_user.is_authenticated %}
+      <div class="comment-form">
+        <textarea id="commentBody" class="input" rows="3" placeholder="Write a comment..."></textarea>
+        <button class="btn" id="sendComment">Post</button>
+      </div>
+    {% else %}
+      <div class="muted">Log in to comment.</div>
+    {% endif %}
+
+    <div id="commentsList" class="comments-list"></div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  initRecipeDetail({
+    recipeId: {{ recipe.id }},
+    baseServings: {{ recipe.servings }},
+    enableIngredientCalc: {{ recipe.has_computable_ingredients() | tojson }}
+  });
+</script>
+{% endblock %}

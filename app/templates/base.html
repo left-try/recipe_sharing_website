@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}RecipeShare{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" sizes="any" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20260414-main-content-padding-fix') }}" />
+</head>
+<body class="{% block body_class %}page-shell{% endblock %}">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('main.index') }}">RecipeShare</a>
+
+      <form class="search" action="{{ url_for('main.index') }}" method="get">
+        <input name="q" value="{{ request.args.get('q','') }}" placeholder="Search recipes..." />
+        <button type="submit">Search</button>
+      </form>
+
+      <nav class="nav">
+        {% if current_user.is_authenticated %}
+          <a class="pill" href="{{ url_for('recipes.create') }}">+ New Recipe</a>
+          <a href="{{ url_for('recipes.mine') }}">My recipes</a>
+          <a href="{{ url_for('recipes.favorites') }}">Favorites</a>
+          <a href="{{ url_for('auth.profile') }}">Profile</a>
+          <a href="{{ url_for('auth.logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">Login</a>
+          <a class="pill" href="{{ url_for('auth.register') }}">Sign up</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <div class="container page-content {% block main_class %}{% endblock %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-wrap">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+    
+
+  <script src="{{ url_for('static', filename='js/main.js', v='20260409-step-toolbar') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

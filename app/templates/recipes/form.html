@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'edit' %}Edit Recipe{% else %}New Recipe{% endif %} • RecipeShare{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>{% if mode == 'edit' %}Edit recipe{% else %}Create a recipe{% endif %}</h2>
+  <form method="post" enctype="multipart/form-data" id="recipeForm">
+    {{ form.hidden_tag() }}
+
+    <div class="grid-2">
+      <div class="field">
+        {{ form.title.label }}
+        {{ form.title(class_="input", placeholder="e.g., Creamy Pasta") }}
+        {% for e in form.title.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.category_id.label }}
+        {{ form.category_id(class_="input") }}
+      </div>
+    </div>
+
+    <div class="field">
+      {{ form.description.label }}
+      {{ form.description(class_="input", rows=3, placeholder="Short summary...") }}
+      {% for e in form.description.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="grid-3">
+      <div class="field">
+        {{ form.prep_minutes.label }}
+        {{ form.prep_minutes(class_="input", placeholder="0") }}
+      </div>
+      <div class="field">
+        {{ form.cook_minutes.label }}
+        {{ form.cook_minutes(class_="input", placeholder="0") }}
+      </div>
+      <div class="field">
+        {{ form.servings.label }}
+        {{ form.servings(class_="input", placeholder="1") }}
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        {{ form.difficulty.label }}
+        {{ form.difficulty(class_="input") }}
+      </div>
+      <div class="field">
+        {{ form.tags_csv.label }}
+        {{ form.tags_csv(class_="input", placeholder="italian, spicy, quick") }}
+      </div>
+    </div>
+
+    <div class="recipe-form-stack">
+      <section class="form-section">
+        <div class="field">
+          <label>Ingredients</label>
+          <div class="muted small">One ingredient per row: enter a name, an amount, and a unit (for example 2 tbsp, 300 g, or 1 cup).</div>
+          <div class="dynamic-list ingredient-editor" id="ingredientsList"></div>
+          <button type="button" class="btn secondary" id="addIngredient">+ Add ingredient</button>
+          {{ form.ingredients_text(class_="input hidden", id="ingredientsText") }}
+          {% for e in form.ingredients_text.errors %}<div class="error">{{ e }}</div>{% endfor %}
+          <div class="error" id="ingredientsClientError" hidden role="alert"></div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="field">
+          <label>Steps</label>
+          <div class="muted small">Use the buttons below or change <strong>Step type</strong> on any step to Text, Image, or Video.</div>
+          <div class="step-editor-toolbar">
+            <button type="button" class="btn secondary" id="addContentStep">+ Add text step</button>
+            <button type="button" class="btn secondary" id="addImageStep">+ Add image step</button>
+            <button type="button" class="btn secondary" id="addVideoStep">+ Add video step</button>
+          </div>
+          <div class="step-editor" id="stepEditor"></div>
+          {{ form.steps_data(class_="input hidden", id="stepsData") }}
+          {{ form.steps_text(class_="input hidden", id="stepsText") }}
+          {% for e in form.steps_data.errors %}<div class="error">{{ e }}</div>{% endfor %}
+          {% for e in form.steps_text.errors %}<div class="error">{{ e }}</div>{% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <div class="field">
+      {{ form.image.label }}
+      {{ form.image(class_="input", accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp", id="recipeImageInput") }}
+      <div class="muted small">Optional cover image only (png, jpg, or webp).</div>
+      <div id="recipeImagePreviewWrap">
+        {% if mode == 'edit' and recipe and recipe.image_display_url %}
+          <img class="recipe-image-preview" id="recipeImagePreview" src="{{ recipe.image_display_url }}" alt="Recipe image preview" />
+        {% else %}
+          <img class="recipe-image-preview hidden" id="recipeImagePreview" alt="Recipe image preview" />
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="field checkbox">
+      {{ form.is_published() }}
+      {{ form.is_published.label }}
+    </div>
+
+    <button class="btn" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function safeParseSteps(rawValue) {
+    try {
+      const parsed = JSON.parse(rawValue || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  const initialIngredients = ({{ (form.ingredients_text.data or '')|tojson }}).split("\n").map(s => s.trim()).filter(Boolean);
+  const initialSteps = safeParseSteps({{ (form.steps_data.data or '[]')|tojson }});
+  const recipeImageInput = document.getElementById("recipeImageInput");
+  const recipeImagePreview = document.getElementById("recipeImagePreview");
+
+  if (recipeImageInput) {
+    recipeImageInput.addEventListener("change", (event) => {
+      const [file] = event.target.files || [];
+      if (file && typeof window.isSupportedImageFile === "function" && !window.isSupportedImageFile(file)) {
+        event.target.value = "";
+        if (recipeImagePreview && !recipeImagePreview.getAttribute("src")) {
+          recipeImagePreview.classList.add("hidden");
+        }
+        alert("Please choose a png, jpg, jpeg, or webp image.");
+        return;
+      }
+      if (recipeImagePreview) {
+        if (file && typeof window.isSupportedImageFile === "function" && window.isSupportedImageFile(file)) {
+          recipeImagePreview.src = URL.createObjectURL(file);
+          recipeImagePreview.classList.remove("hidden");
+        } else if (!recipeImagePreview.getAttribute("src")) {
+          recipeImagePreview.classList.add("hidden");
+        }
+      }
+    });
+  }
+
+  if (typeof window.setupIngredientEditor === "function") {
+    window.setupIngredientEditor({
+      containerId: "ingredientsList",
+      addBtnId: "addIngredient",
+      hiddenTextareaId: "ingredientsText",
+      initialItems: initialIngredients,
+      clientErrorId: "ingredientsClientError",
+    });
+  } else if (typeof window.setupDynamicList === "function") {
+    window.setupDynamicList({
+      containerId: "ingredientsList",
+      addBtnId: "addIngredient",
+      hiddenTextareaId: "ingredientsText",
+      initialItems: initialIngredients,
+      placeholder: "e.g., 2 eggs",
+      clientErrorId: "ingredientsClientError",
+    });
+  } else {
+    const ingredientsList = document.getElementById("ingredientsList");
+    if (ingredientsList) {
+      ingredientsList.innerHTML = '<div class="flash danger">Ingredient editor script did not load. Refresh the page and try again.</div>';
+    }
+  }
+
+  if (typeof window.setupStepEditor === "function") {
+    window.setupStepEditor({
+      containerId: "stepEditor",
+      addContentBtnId: "addContentStep",
+      addImageBtnId: "addImageStep",
+      addVideoBtnId: "addVideoStep",
+      hiddenInputId: "stepsData",
+      legacyTextareaId: "stepsText",
+      initialSteps
+    });
+  } else {
+    const stepEditor = document.getElementById("stepEditor");
+    if (stepEditor) {
+      stepEditor.innerHTML = '<div class="flash danger">Step editor script did not load. Refresh the page and try again.</div>';
+    }
+  }
+</script>
+{% endblock %}

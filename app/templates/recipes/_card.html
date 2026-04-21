@@ -1,0 +1,35 @@
+<article class="recipe-card card">
+  <a class="recipe-card-img" href="{{ url_for('recipes.detail', recipe_id=r.id) }}">
+    {% if r.image_display_url %}
+      <img src="{{ r.image_display_url }}" alt="recipe image" />
+    {% else %}
+      <div class="img-placeholder">No image</div>
+    {% endif %}
+  </a>
+
+  <div class="recipe-card-body">
+    <div class="recipe-card-top">
+      <h3 class="recipe-title">
+        <a href="{{ url_for('recipes.detail', recipe_id=r.id) }}">{{ r.title }}</a>
+      </h3>
+    </div>
+    <div class="recipe-card-chips">
+      {% if r.category %}
+        <a class="chip chip-category" href="{{ url_for('main.index', category=r.category.slug) }}">{{ r.category.name }}</a>
+      {% endif %}
+      {% for t in r.tags %}
+        <a class="chip chip-tag" href="{{ url_for('main.index', tag=t.slug) }}">{{ t.name }}</a>
+      {% endfor %}
+    </div>
+
+    <p class="muted clamp-2">{{ r.description or "—" }}</p>
+
+    <div class="recipe-meta">
+      <span class="muted small">by {{ r.author.username }}</span>
+      <span class="dot">•</span>
+      <span class="muted small">{{ r.likes.count() }} likes</span>
+      <span class="dot">•</span>
+      <span class="muted small">{{ r.view_count }} views</span>
+    </div>
+  </div>
+</article>

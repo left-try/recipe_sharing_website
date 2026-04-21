@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Favorites • RecipeShare{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Favorites</h2>
+  <p class="muted">Recipes you saved.</p>
+</div>
+
+<section class="grid">
+  {% for r in recipes.items %}
+    {% include "recipes/_card.html" %}
+  {% else %}
+    <div class="card empty">No favorites yet.</div>
+  {% endfor %}
+</section>
+
+{% include "recipes/_pagination.html" with context %}
+{% endblock %}

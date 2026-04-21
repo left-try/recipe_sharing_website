@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Set new password • RecipeShare{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+<div class="auth card">
+  <h2>Set a new password</h2>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.password.label }}
+      {{ form.password(class_="input") }}
+      {% for e in form.password.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.confirm.label }}
+      {{ form.confirm(class_="input") }}
+      {% for e in form.confirm.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <button class="btn" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+</div>
+{% endblock %}

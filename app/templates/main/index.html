@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Explore • RecipeShare{% endblock %}
+{% block main_class %}home-main{% endblock %}
+
+{% block content %}
+<div class="home-layout">
+  <section class="hero">
+    <h1>Find your next favorite recipe</h1>
+    <p class="muted">Search, filter, like, favorite, and share your own.</p>
+  </section>
+
+  <section class="filters card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="categorySelect">Category</label>
+        <select id="categorySelect" class="input filter-select">
+          <option value="">All</option>
+          {% for c in categories %}
+            <option value="{{ c.slug }}" {% if category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="tagSelect">Tag</label>
+        <select id="tagSelect" class="input filter-select">
+          <option value="">Any</option>
+          {% for t in tags %}
+            <option value="{{ t.slug }}" {% if tag == t.slug %}selected{% endif %}>{{ t.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sortSelect">Sort</label>
+        <select id="sortSelect" class="input filter-select">
+          <option value="new" {% if sort == 'new' %}selected{% endif %}>Newest</option>
+          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Popular</option>
+        </select>
+      </div>
+
+      <button class="btn" id="applyFilters">Apply</button>
+    </div>
+  </section>
+
+  <section class="grid">
+    {% for r in recipes.items %}
+      {% include "recipes/_card.html" %}
+    {% else %}
+      <div class="card empty">No recipes found.</div>
+    {% endfor %}
+  </section>
+
+  {% include "recipes/_pagination.html" with context %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const q = {{ q|tojson }};
+  const apply = () => {
+    const c = document.getElementById("categorySelect").value;
+    const t = document.getElementById("tagSelect").value;
+    const s = document.getElementById("sortSelect").value;
+
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (c) params.set("category", c);
+    if (t) params.set("tag", t);
+    if (s) params.set("sort", s);
+
+    window.location = "/?" + params.toString();
+  };
+
+  document.getElementById("applyFilters").addEventListener("click", apply);
+</script>
+{% endblock %}

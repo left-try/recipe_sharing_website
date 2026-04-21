@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Profile • RecipeShare{% endblock %}
+{% block content %}
+<div class="card profile">
+  <div class="profile-head">
+    <div class="avatar">
+      {% if current_user.avatar_filename %}
+        <img src="{{ url_for('static', filename='avatars/' ~ current_user.avatar_filename) }}" alt="avatar" />
+      {% else %}
+        <div class="avatar-placeholder">{{ current_user.username[:1].upper() }}</div>
+      {% endif %}
+    </div>
+    <div>
+      <h2>{{ current_user.username }}</h2>
+      <div class="muted">{{ current_user.email }}</div>
+      {% if current_user.is_admin %}<span class="badge">Admin</span>{% endif %}
+    </div>
+  </div>
+
+  <hr class="sep" />
+
+  <h3>Edit profile</h3>
+  <form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.username.label }}
+      {{ form.username(class_="input") }}
+      {% for e in form.username.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.bio.label }}
+      {{ form.bio(class_="input", rows=4, placeholder="A short bio...") }}
+      {% for e in form.bio.errors %}<div class="error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.avatar.label }}
+      {{ form.avatar(class_="input", accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp") }}
+      {% for e in form.avatar.errors %}<div class="error">{{ e }}</div>{% endfor %}
+      <div class="muted small">Tip: square images work best.</div>
+    </div>
+    <button class="btn" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+</div>
+{% endblock %}

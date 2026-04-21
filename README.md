@@ -109,7 +109,6 @@ recipe_sharing_website/
   README.md
   .env.example
 ```
-
 ## Notes
 
 - Password reset is implemented with a timed token. For simplicity in a course project, the reset URL is printed in the server console. Later a real email provider could be connected.
@@ -118,3 +117,9 @@ recipe_sharing_website/
 - Profile avatars use local storage under `app/static/avatars`.
 - Each recipe detail page includes a PDF export download.
 - SQLite file is `app.db` by default.
+
+
+## Demo
+[https://drive.google.com/file/d/100pIDnXUU1yXbj9KR1n30Z6w3TSn4BF6/view?usp=sharing](https://drive.google.com/file/d/100pIDnXUU1yXbj9KR1n30Z6w3TSn4BF6/view?usp=sharing)
+## Feedback from the professor
+[https://drive.google.com/file/d/1_jGbEePVKlUat7d-wNJWcbABZyrJ22O1/view?usp=sharing] (https://drive.google.com/file/d/1_jGbEePVKlUat7d-wNJWcbABZyrJ22O1/view?usp=sharing)

@@ -179,14 +179,18 @@ recipe_sharing_website/
   .env.example
 ```
 
-## API and Database Notes
+## Notes
 
-- Recipe media uploads call external storage `POST /files`; media deletion uses `DELETE /files/<file_id>`.
-- Storage responses are expected to include a file identifier and a public URL.
-- Profile avatars are stored locally in `app/static/avatars`.
-- Default SQLite database file is `app.db`.
+- Password reset is implemented with a timed token. For simplicity in a course project, the reset URL is printed in the server console. Later a real email provider could be connected.
+- New recipe image uploads are sent to the external file storage service with `POST /files` and removed with `DELETE /files/<file_id>`.
+- The storage service is expected to return a file identifier and a public URL in its upload response.
+- Profile avatars use local storage under `app/static/avatars`.
+- Each recipe detail page includes a PDF export download.
+- SQLite file is `app.db` by default.
 
-## Limitations and Future Improvements
 
-- Password reset currently prints reset links to server logs for development simplicity.
-- Production-ready email delivery can be added via an email provider integration.
+## Demo
+[https://drive.google.com/file/d/100pIDnXUU1yXbj9KR1n30Z6w3TSn4BF6/view?usp=sharing](https://drive.google.com/file/d/100pIDnXUU1yXbj9KR1n30Z6w3TSn4BF6/view?usp=sharing)
+## Feedback from the professor
+[https://drive.google.com/file/d/1_jGbEePVKlUat7d-wNJWcbABZyrJ22O1/view?usp=sharing](https://drive.google.com/file/d/1_jGbEePVKlUat7d-wNJWcbABZyrJ22O1/view?usp=sharing)
+

@@ -50,7 +50,7 @@ Many home cooks keep recipes in scattered notes, chat messages, and bookmarks, w
 - **Backend**: Python, Flask, Flask-Login, Flask-WTF (CSRF), SQLAlchemy
 - **Database**: SQLite
 - **External Integration**: HTTP-based file storage API for recipe media
-- **Dev Environment**: Python virtual environment, pip, Flask CLI
+- **Dev Environment**: Python virtual environment
 
 ## Setup and Run Instructions
 
